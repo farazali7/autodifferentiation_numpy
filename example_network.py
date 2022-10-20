@@ -76,10 +76,6 @@ class ExampleNetwork:
 
         return params['A3']
 
-    def backward_pass(self, preds, actual):
-        params = self.params
-        grads = {}
-
     def compute_loss(self, preds, actual):
         # Regression loss if no. of output neurons, k = 1 in network
         return (preds - actual) ** 2 / 2

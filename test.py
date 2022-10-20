@@ -26,7 +26,7 @@ def train_five_epochs_test(nn, x, y):
     LR = 1./100.
 
     losses = []
-    for epoch_num in range(1, EPOCHS+1):
+    for epoch_num in range(EPOCHS+1):
         # Reset grads?
 
         # Perform forward pass
@@ -36,20 +36,20 @@ def train_five_epochs_test(nn, x, y):
         loss = nn.compute_loss(nn_output, y)
         mean_loss = np.mean(loss)
         losses.append(mean_loss)
-        print(f'EPOCH: {epoch_num}, AVG LOSS: {mean_loss}')
 
         # Compute gradients
         grads = gradient(loss)
 
         # Calculate mean gradient
-        # mean_grad = np.array(grads)
+        mean_grad = np.mean([np.mean(x) for x in grads.values()])
+
+        print(f'EPOCH: {epoch_num}, AVG LOSS: {mean_loss}, AVG GRAD: {mean_grad}')
 
         new_params = {}
         # Perform parameter updates
         for param_name in grads.keys():
             new_params[param_name] = nn.params[param_name] - grads[param_name]*LR
         nn.params = nn.update_parameters(**new_params)
-
 
 
 with open('data/assignment-one-test-parameters.pkl', 'rb') as f:
@@ -67,5 +67,5 @@ b3 = x['b3']
 network = ExampleNetwork(seed=7, **{'w1': w1, 'w2': w2, 'w3': w3,
                                     'b1': b1, 'b2': b2, 'b3': b3})
 
-print_layer1_grads_test(network, x_train, y_train)
-# train_five_epochs_test(network, x_train, y_train)
+# print_layer1_grads_test(network, x_train, y_train)
+train_five_epochs_test(network, x_train, y_train)

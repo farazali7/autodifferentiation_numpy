@@ -12,12 +12,9 @@ class Node(np.ndarray):
         :param node_type: String, one of {'data' for data/vars, 'const' for constants, 'op' for operations}
         :return: new Node object
         '''
-        cls.node_type = node_type
-        cls.name = name
-
         node_obj = np.ndarray.__new__(cls, shape=shape, dtype=dtype, buffer=buffer)
         node_obj.node_type = node_type
-        name = name if not None else str(uuid.uuid4().hex)
+        name = name if name is not None else str(uuid.uuid4().hex)
         node_obj.name = name
 
         return node_obj
@@ -123,7 +120,7 @@ class Node(np.ndarray):
         return self._override_arith_ops('__pow__', other_operand, 'pow')
 
     def __rpow__(self, other_operand):
-        return self._override_arith_ops('__rpow__', other_operand, 'div', False)
+        return self._override_arith_ops('__rpow__', other_operand, 'pow', False)
 
     @property
     def T(self):

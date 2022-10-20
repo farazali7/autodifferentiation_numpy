@@ -1,4 +1,4 @@
-import comp_graph as cg
+import auto_diff.comp_graph as cg
 import numpy as np
 
 '''
@@ -37,24 +37,12 @@ def sum_deriv(previous_deriv, node):
     return [previous_deriv * np.ones_like(node.operand_a), None]
 
 
-def mean_deriv(previous_deriv, node):
-    return [previous_deriv * node * np.ones_like(node.operand_a), None]
-
-
 def exp_deriv(previous_deriv, node):
     return [previous_deriv * node, None]
 
 
 def log_deriv(previous_deriv, node):
     return [previous_deriv * (1. / node.operand_a), None]
-
-
-def max_deriv(previous_deriv, node):
-    unique_vals = cg.where(node.operand_a == node.with_keepdims, 1, 0)
-    counts = cg.sum(unique_vals, axis=node.axis, keepdims=True)
-    norm_operand_a = unique_vals / counts
-
-    return [previous_deriv * norm_operand_a, None]
 
 
 def dot_deriv(previous_deriv, node):
@@ -70,10 +58,10 @@ def dot_deriv(previous_deriv, node):
         operand_a = cg.reshape(operand_a, (1, -1))
 
     if node.operand_b.ndim == 1:
-        operand_b = cg.reshape(operand_b, (1, -1))
+        operand_b = cg.reshape(operand_b, (-1, 1))
 
     # Dot product version of mul_deriv
-    return [cg.dot(prev_deriv, operand_b.T, cg.dot(operand_a.T, prev_deriv))]
+    return [cg.dot(prev_deriv, operand_b.T), cg.dot(operand_a.T, prev_deriv)]
 
 
 def where_deriv(previous_deriv, node):
@@ -87,15 +75,7 @@ def where_deriv(previous_deriv, node):
 
 
 def relu_deriv(previous_deriv, node):
-    return where_deriv(previous_deriv, node)  # ReLU implemented via where fn
-
-
-def sin_deriv(previous_deriv, node):
-    return [previous_deriv * cg.cos(node.operand_a), None]
-
-
-def cos_deriv(previous_deriv, node):
-    return [-1 * previous_deriv * cg.sin(node.operand_a), None]
+    return where_deriv(previous_deriv, node)  # ReLU was implemented via 'where' fn
 
 
 def reshape_deriv(previous_deriv, node):

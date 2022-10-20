@@ -14,7 +14,7 @@ def data_node(value, name=None):
     :param name: String, optional name for Node
     :return: Node containing input data
     '''
-    return Node.create_data_node(value, name=name) if not isinstance(value, Node) else value
+    return Node.create_data_node(value, name=name)
 
 
 def const_node(value, name=None):
@@ -29,12 +29,12 @@ def const_node(value, name=None):
 
 def sum(arr, axis=None, keepdims=False, name=None):
     '''
-    Creates OpNode representing a sum.
+    Creates Node representing a sum.
     :param arr: Node or nd.array or Number, array on which to sum
     :param axis: Int, axis to sum on
     :param keepdims: Boolean, should dimensions of arr be kept
     :param name: String, optional name for Node
-    :return: OpNode representing this sum operation
+    :return: Node representing this sum operation
     '''
 
     arr = const_node(arr)
@@ -43,27 +43,12 @@ def sum(arr, axis=None, keepdims=False, name=None):
     return Node.create_op_node(op_res, 'sum', arr, name=name)
 
 
-def mean(arr, axis=None, name=None):
-    '''
-    Creates OpNode representing a mean.
-    :param arr: Node or nd.array or Number, array to average
-    :param axis: Int, axis to average on
-    :param name: String, optional name for Node
-    :return: OpNode representing this mean operation
-    '''
-
-    arr = const_node(arr)
-    op_res = np.mean(arr, axis=axis)
-
-    return Node.create_op_node(op_res, 'mean', arr, name=name)
-
-
 def exp(arr, name=None):
     '''
-    Creates OpNode representing a exp (raise all values in given array by exp).
+    Creates Node representing a exp (raise all values in given array by exp, Euler's number).
     :param arr: Node or nd.array or Number
     :param name: String, optional name for Node
-    :return: OpNode representing this operation
+    :return: Node representing this operation
     '''
 
     arr = const_node(arr)
@@ -74,10 +59,10 @@ def exp(arr, name=None):
 
 def log(arr, name=None):
     '''
-    Creates OpNode representing a log.
+    Creates Node representing a log.
     :param arr: Node or nd.array or Number
     :param name: String, optional name for Node
-    :return: OpNode representing this operation
+    :return: Node representing this operation
     '''
 
     arr = const_node(arr)
@@ -86,36 +71,13 @@ def log(arr, name=None):
     return Node.create_op_node(op_res, 'log', arr, name=name)
 
 
-def max(arr, axis=None, keepdims=False, name=None):
-    '''
-    Creates OpNode representing a max operation.
-    :param arr: Node or nd.array or Number
-    :param axis: Int, axis to find maxes on
-    :param keepdims: Boolean, should dimensions of arr be kept
-    :param name: String, optional name for Node
-    :return: OpNode representing this operation
-    '''
-
-    arr = const_node(arr)
-    op_res = np.max(arr, axis=axis, keepdims=keepdims)
-
-    op_node = Node.create_op_node(op_res, 'max', arr, name=name)
-
-    # Store additional info for grad computation of max operation
-    op_node.axis = axis
-    op_node.keepdims = keepdims
-    op_node.with_keep_dims = np.max(arr, axis=axis, keepdims=True)
-
-    return op_node
-
-
 def dot(arr_a, arr_b, name=None):
     '''
-    Creates OpNode representing a dot product.
+    Creates Node representing a dot product.
     :param arr_a: Node or nd.array or Number
     :param arr_b: Node or nd.array or Number
     :param name: String, optional name for Node
-    :return: OpNode representing this operation
+    :return: Node representing this operation
     '''
 
     arr_a = const_node(arr_a)
@@ -127,12 +89,12 @@ def dot(arr_a, arr_b, name=None):
 
 def where(cond, arr_a, arr_b, name=None):
     '''
-    Creates OpNode representing a where-clause filtering operation.
+    Creates Node representing a where-clause filtering operation.
     :param cond: ndarray of Boolean representing filtering conditions
     :param arr_a: Node or nd.array or Number
     :param arr_b: Node or nd.array or Number
     :param name: String, optional name for Node
-    :return: OpNode representing this operation
+    :return: Node representing this operation
     '''
 
     if not isinstance(arr_a, Node):
@@ -150,42 +112,13 @@ def where(cond, arr_a, arr_b, name=None):
 
     return op_node
 
-
-def sin(arr, name=None):
-    '''
-    Creates OpNode representing a sin.
-    :param arr: Node or nd.array or Number
-    :param name: String, optional name for Node
-    :return: OpNode representing this operation
-    '''
-
-    arr = const_node(arr)
-    op_res = np.sin(arr)
-
-    return Node.create_op_node(op_res, 'sin', arr, name=name)
-
-
-def cos(arr, name=None):
-    '''
-    Creates OpNode representing a sin.
-    :param arr: Node or nd.array or Number
-    :param name: String, optional name for Node
-    :return: OpNode representing this operation
-    '''
-
-    arr = const_node(arr)
-    op_res = np.cos(arr)
-
-    return Node.create_op_node(op_res, 'cos', arr, name=name)
-
-
 def reshape(arr, new_shape, name=None):
     '''
-    Creates OpNode representing reshape operation.
+    Creates Node representing reshape operation.
     :param arr: Node or nd.array or Number
     :param new_shape: Tuple or List, new shape for array
     :param name: String, optional name for Node
-    :return: OpNode representing this operation
+    :return: Node representing this operation
     '''
 
     arr = const_node(arr)
@@ -196,15 +129,19 @@ def reshape(arr, new_shape, name=None):
 
 def relu(arr, name=None):
     '''
-    Creates OpNode representing ReLU operation.
+    Creates Node representing ReLU operation.
     :param arr: Node or nd.array or Number
     :param name: String, optional name for Node
-    :return: OpNode representing this operation
+    :return: Node representing this operation
     '''
 
     arr = const_node(arr)
-    arr_b = const_node(np.zeros_like(arr))
-    op_res = np.where(arr > 0, arr, arr_b)
+    arr_b = const_node(np.zeros(shape=arr.shape))
+    cond = arr > 0
+    op_res = np.where(cond, arr, arr_b)
 
-    return Node.create_op_node(op_res, 'relu', arr, arr_b, name=name)
+    op_node = Node.create_op_node(op_res, 'relu', arr, arr_b, name=name)
+    op_node.cond = cond
+
+    return op_node
 

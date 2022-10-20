@@ -1,5 +1,5 @@
 import numpy as np
-import comp_graph as cg
+import auto_diff.comp_graph as cg
 
 
 def correct_deriv(node, previous_deriv):

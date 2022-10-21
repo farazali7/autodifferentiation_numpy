@@ -21,7 +21,7 @@ class Node(np.ndarray):
         return node_obj
 
     @staticmethod
-    def create_op_node(op_res, op_name, operand_a, operand_b=None, name=None):
+    def create_op_node(op_res, op_name, operand_a, operand_b=None, name=None, order='C'):
         '''
         Create a computation graph node for an operation
         :param op_res: np.ndarray, result of the operation
@@ -33,7 +33,8 @@ class Node(np.ndarray):
         '''
 
         name = name if name is not None else f"{op_name}_{str(uuid.uuid4().hex)}"
-        op_node = Node(shape=op_res.shape, dtype=op_res.dtype, buffer=np.copy(op_res), node_type='op', name=name)
+        op_node = Node(shape=op_res.shape, dtype=op_res.dtype, buffer=np.copy(op_res), node_type='op',
+                       order=order, name=name)
         op_node.op_name = op_name
         op_node.operand_a = operand_a
         op_node.operand_b = operand_b
@@ -130,4 +131,8 @@ class Node(np.ndarray):
         Override transpose property on normal np.ndarray by returning OpNode capturing this op
         :return: OpNode holding transposed node data
         '''
-        return Node.create_op_node(np.transpose(self), 'transpose', self)
+        # Check if all dims are same
+        all_dims_same = len(np.unique(self.shape)) == 1
+        # order = 'C' if all_dims_same else 'F'
+        order = 'C' if self.flags['F_CONTIGUOUS'] else 'F'
+        return Node.create_op_node(np.transpose(self), 'transpose', self, order=order)

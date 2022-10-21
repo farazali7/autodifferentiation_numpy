@@ -1,6 +1,6 @@
 import numpy as np
 import auto_diff.comp_graph as cg
-from auto_diff import gradient, gradient2
+from auto_diff import gradient
 
 
 class ExampleNetwork:
@@ -58,7 +58,7 @@ class ExampleNetwork:
         return params
 
     def one_forward(self, input_data, y):
-        params= self.params
+        params = self.params
 
         # Input layer activations
         params['A0'] = input_data
@@ -80,7 +80,16 @@ class ExampleNetwork:
 
         grads, all_g = gradient(mean_loss)
 
-        return grads, all_g
+        old_params = self.params.copy()
+        new_params = {}
+        # Perform parameter updates
+        for param_name in grads.keys():
+            new_params[param_name] = self.params[param_name].T - grads[param_name].T*(1./100.)
+            # new_params[param_name] = new_params[param_name].T
+            # new_params[param_name] = nn.params[param_name] - mean_grad*LR
+        self.params = self.update_parameters(**new_params)
+
+        return grads, all_g, old_params
 
 
     def forward_pass(self, input_data):

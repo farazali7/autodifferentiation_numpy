@@ -6,6 +6,25 @@ from auto_diff import gradient, comp_graph as cg
 from pytorch_network import Network
 
 
+def check_all_params_same(t1, t2):
+    w1_same = np.allclose(t1[0].detach().numpy(), np.array(t2['w1'].T))
+    w2_same = np.allclose(t1[2].detach().numpy(), np.array(t2['w2'].T))
+    w3_same = np.allclose(t1[4].detach().numpy(), np.array(t2['w3'].T))
+
+    b1_same = np.allclose(t1[1].detach().numpy(), np.array(t2['b1'].T))
+    b2_same = np.allclose(t1[3].detach().numpy(), np.array(t2['b2'].T))
+    b3_same = np.allclose(t1[5].detach().numpy(), np.array(t2['b3'].T))
+
+    check = {'w1_same': w1_same,
+             'w2_same': w2_same,
+             'w3_same': w3_same,
+             'b1_same': b1_same,
+             'b2_same': b2_same,
+             'b3_same': b3_same}
+
+    return check
+
+
 def print_layer1_grads_test(nn, x, y):
     '''
     Print gradients of layer 1 for first pair of training data.
@@ -67,19 +86,22 @@ def train_five_epochs_test(nn, x, y):
 
 
 def pytorch_test(x, y, w1, w2, w3, b1, b2, b3):
+    network_2 = ExampleNetwork(seed=7, **{'w1': np.copy(w1_pt), 'w2': np.copy(w2_pt), 'w3': np.copy(w3_pt),
+                                          'b1': np.copy(b1), 'b2': np.copy(b2), 'b3': np.copy(b3)})
+
     network = Network(weights=[w1.T, b1.T, w2.T, b2.T, w3.T, b3.T])
     EPOCHS = 5
     LR = 1./100.
 
-    test_1, all_non_leaf_1 = network.one_forward(x, y)
+    for i in range(EPOCHS):
 
-    network_2 = ExampleNetwork(seed=7, **{'w1': w1_pt, 'w2': w2_pt, 'w3': w3_pt,
-                                          'b1': b1, 'b2': b2, 'b3': b3})
-    test_2, all_non_leaf_2 = network_2.one_forward(x, y)
+        test_1, all_non_leaf_1, params_1 = network.one_forward(x, y)
 
-    print('done testing')
+        test_2, all_non_leaf_2, params_2 = network_2.one_forward(x, y)
 
-
+        grads_same = check_all_params_same(test_1, test_2)
+        params_same = check_all_params_same(params_1, params_2)
+        print('done testing')
 
     network.train(x, y, epochs=EPOCHS, learning_rate=LR)
     print('done')
@@ -91,15 +113,16 @@ with open('data/assignment-one-test-parameters.pkl', 'rb') as f:
 
 x_train = x['inputs']
 y_train = x['targets'][..., np.newaxis]
+
 w1 = x['w1']
 w1_pt = w1.T
-w1_our = np.reshape(w1, [w1.shape[1], w1.shape[0]], order='F')
+
 w2 = x['w2']
 w2_pt = w2.T
-w2_our = np.reshape(w2, [w2.shape[1], w2.shape[0]], order='F')
+
 w3 = x['w3']
 w3_pt = w3.T
-w3_our = np.reshape(w3, [w3.shape[1], w3.shape[0]], order='F')
+
 b1 = x['b1']
 b2 = x['b2']
 b3 = x['b3']

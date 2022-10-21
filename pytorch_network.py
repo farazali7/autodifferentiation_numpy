@@ -32,6 +32,12 @@ class Network(nn.Module):
         return self.output(x)
 
     def one_forward(self, x, y):
+        optimizer = SGD(self.parameters(), lr=1./100.)
+
+        optimizer.zero_grad()
+
+        t = [p.data.clone() for p in self.parameters()]
+
         x = torch.Tensor(x)
 
         x1 = self.hidden1(x)
@@ -73,6 +79,9 @@ class Network(nn.Module):
         mean_loss.backward()  # Compute and store gradients
 
         grads = [p.grad for p in self.parameters()]
+        p_this = [p.data.clone() for p in self.parameters()]
+
+        optimizer.step()
 
         all_non_leaf_grads = {'mean_loss': mean_loss.grad,
                               'loss_div': loss_div.grad,
@@ -84,7 +93,7 @@ class Network(nn.Module):
                               'x1L': x1L.grad,
                               'x1': x1.grad}
 
-        return grads, all_non_leaf_grads
+        return grads, all_non_leaf_grads, p_this
 
     def train(self, train_x, train_y, epochs=1, log_interval=50, optimizer_fn=SGD, learning_rate=0.001):
         optimizer = optimizer_fn(self.parameters(), lr=learning_rate)

@@ -3,16 +3,17 @@ import uuid
 
 
 class Node(np.ndarray):
-    def __new__(cls, shape, dtype=float, buffer=None, node_type='data', name=None):
+    def __new__(cls, shape, dtype=float, buffer=None, node_type='data', order='C', name=None):
         '''
         Create a new Node object that acts as a wrapper around a NumPy array.
         :param shape: List of int representing shape of Node
         :param dtype: np.dtype representing data type of Node value
         :param buffer: None or np.ndarray, contains initialization data
+        :param order: String, one of {'C' for row-major, or 'F' for column-major order}
         :param node_type: String, one of {'data' for data/vars, 'const' for constants, 'op' for operations}
         :return: new Node object
         '''
-        node_obj = np.ndarray.__new__(cls, shape=shape, dtype=dtype, buffer=buffer)
+        node_obj = np.ndarray.__new__(cls, shape=shape, dtype=dtype, buffer=buffer, order=order)
         node_obj.node_type = node_type
         name = name if name is not None else str(uuid.uuid4().hex)
         node_obj.name = name
@@ -40,17 +41,18 @@ class Node(np.ndarray):
         return op_node
 
     @staticmethod
-    def create_data_node(data, name=None):
+    def create_data_node(data, name=None, order='F'):
         '''
         Creates a computation graph node for a variable.
         :param data: np.ndarray or Number
+        :param order: String, one of {'C' for row-major, or 'F' for column-major order}
         :return: Node containing pertinent variable information
         '''
         if not isinstance(data, np.ndarray):
             data = np.array(data, dtype=float)
 
         name = name if name is not None else f"data_{str(uuid.uuid4().hex)}"
-        return Node(shape=data.shape, dtype=data.dtype, buffer=data, node_type='data', name=name)
+        return Node(shape=data.shape, dtype=data.dtype, buffer=data, node_type='data', name=name, order=order)
 
     @staticmethod
     def create_const_node(data, name=None):

@@ -1,5 +1,6 @@
 import numpy as np
 import auto_diff.comp_graph as cg
+from auto_diff import gradient, gradient2
 
 
 class ExampleNetwork:
@@ -56,9 +57,37 @@ class ExampleNetwork:
 
         return params
 
+    def one_forward(self, input_data, y):
+        params= self.params
+
+        # Input layer activations
+        params['A0'] = input_data
+
+        # Input layer to hidden layer 1
+        params['Z1'] = cg.dot(params['A0'], params['w1']) + params['b1']
+        params['A1'] = cg.relu(params['Z1'])
+
+        # Hidden layer 1 to hidden layer 2
+        params['Z2'] = cg.dot(params['A1'], params['w2']) + params['b2']
+        params['A2'] = cg.relu(params['Z2'])
+
+        # Hidden layer 2 to output layer
+        params['Z3'] = cg.dot(params['A2'], params['w3']) + params['b3']
+        params['A3'] = params['Z3']
+
+        loss = self.compute_loss(params['A3'], y)
+        mean_loss = cg.mean(loss)
+
+        grads, all_g = gradient(mean_loss)
+
+        return grads, all_g
+
+
     def forward_pass(self, input_data):
         params = self.params
 
+        print(f'ALL NODES DATA?: {np.all([p.node_type == "data" for p in self.params.values()])}')
+        # print(f'w1 Params: {self.params["w1"]}')
         # Input layer activations
         params['A0'] = input_data
 

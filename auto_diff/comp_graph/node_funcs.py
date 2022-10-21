@@ -7,14 +7,15 @@ in numpy should be replaced by the ones defined here to enable creation of accur
 '''
 
 
-def data_node(value, name=None):
+def data_node(value, name=None, order='F'):
     '''
     Create a data node in the computational graph.
     :param value: np.ndarray or Number
     :param name: String, optional name for Node
+    :param order: String, one of {'C' for row-major, or 'F' for column-major order}
     :return: Node containing input data
     '''
-    return Node.create_data_node(value, name=name)
+    return Node.create_data_node(value, name=name, order=order)
 
 
 def const_node(value, name=None):
@@ -41,6 +42,20 @@ def sum(arr, axis=None, keepdims=False, name=None):
     op_res = np.sum(arr, axis=axis, keepdims=keepdims)
 
     return Node.create_op_node(op_res, 'sum', arr, name=name)
+
+
+def mean(arr, axis=None, name=None):
+    '''
+    Creates Node representing a mean operation.
+    :param arr: Node or nd.array or Number
+    :param name: String, optional name for Node
+    :return: Node representing this operation
+    '''
+
+    arr = const_node(arr)
+    op_res = np.mean(arr, axis=axis)
+
+    return Node.create_op_node(op_res, 'mean', arr, name=name)
 
 
 def exp(arr, name=None):
@@ -145,3 +160,19 @@ def relu(arr, name=None):
 
     return op_node
 
+
+#TODO: Remove, just for gradient checking right now
+def add(arr1, arr2):
+    return arr1 + arr2
+
+def sub(arr1, arr2):
+    return arr1 - arr2
+
+def mul(arr1, arr2):
+    return arr1 * arr2
+
+def div(arr1, arr2):
+    return arr1 / arr2
+
+def pow(arr1, arr2):
+    return arr1 ** arr2

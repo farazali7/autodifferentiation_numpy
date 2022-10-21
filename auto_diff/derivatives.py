@@ -3,6 +3,7 @@ import numpy as np
 
 '''
 This file contains the derivatives for common binary and unary arithmetic operations and ndarray operations.
+In general, derivatives for function f with operands a and b are expressed as [df/d_operand_a, df/d_operand_b].
 '''
 
 
@@ -35,6 +36,10 @@ def transpose_deriv(previous_deriv, node):
 
 def sum_deriv(previous_deriv, node):
     return [previous_deriv * np.ones_like(node.operand_a), None]
+
+
+def mean_deriv(previous_deriv, node):
+    return [previous_deriv * np.ones_like(node.operand_a) / node.operand_a.shape[0], None]
 
 
 def exp_deriv(previous_deriv, node):

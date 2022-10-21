@@ -41,7 +41,6 @@ def gradient(node):
 
         curr_grads[curr_node.operand_a.name] = correct_deriv(curr_node.operand_a,
                                                              curr_grads[curr_node.operand_a.name] + next_grads[0])
-        # curr_grads[curr_node.operand_a.name] = curr_grads[curr_node.operand_a.name] + next_grads[0]
 
         if curr_node.operand_a not in queue:
             queue.push(curr_node.operand_a)
@@ -50,11 +49,10 @@ def gradient(node):
             curr_grads[curr_node.operand_b.name] = correct_deriv(curr_node.operand_b,
                                                                  curr_grads[curr_node.operand_b.name]
                                                                  + next_grads[1])
-            # curr_grads[curr_node.operand_b.name] = curr_grads[curr_node.operand_b.name] + next_grads[1]
             if curr_node.operand_b not in queue:
                 queue.push(curr_node.operand_b)
 
-    return all_grads, curr_grads
+    return all_grads
 
 
 

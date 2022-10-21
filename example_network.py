@@ -1,7 +1,5 @@
 import numpy as np
 import auto_diff.comp_graph as cg
-from auto_diff import gradient
-
 
 class ExampleNetwork:
     '''
@@ -25,7 +23,8 @@ class ExampleNetwork:
         output_size = layer_sizes[3]
 
         if kwargs is not None:
-            self.params = self.update_parameters(**kwargs)
+            # use column-major ordering for initialization of data nodes
+            self.params = self.update_parameters(order='F', **kwargs)
         else:
             self.params = self.default_init(input_size, hidden_1_size, hidden_2_size, output_size)
 
@@ -57,46 +56,9 @@ class ExampleNetwork:
 
         return params
 
-    def one_forward(self, input_data, y):
-        params = self.params
-
-        # Input layer activations
-        params['A0'] = input_data
-
-        # Input layer to hidden layer 1
-        params['Z1'] = cg.dot(params['A0'], params['w1']) + params['b1']
-        params['A1'] = cg.relu(params['Z1'])
-
-        # Hidden layer 1 to hidden layer 2
-        params['Z2'] = cg.dot(params['A1'], params['w2']) + params['b2']
-        params['A2'] = cg.relu(params['Z2'])
-
-        # Hidden layer 2 to output layer
-        params['Z3'] = cg.dot(params['A2'], params['w3']) + params['b3']
-        params['A3'] = params['Z3']
-
-        loss = self.compute_loss(params['A3'], y)
-        mean_loss = cg.mean(loss)
-
-        grads, all_g = gradient(mean_loss)
-
-        old_params = self.params.copy()
-        new_params = {}
-        # Perform parameter updates
-        for param_name in grads.keys():
-            new_params[param_name] = self.params[param_name] - grads[param_name]*(1./100.)
-            # new_params[param_name] = new_params[param_name].T
-            # new_params[param_name] = nn.params[param_name] - mean_grad*LR
-        self.params = self.update_parameters(order='C', **new_params)
-
-        return grads, all_g, old_params, mean_loss
-
-
     def forward_pass(self, input_data):
         params = self.params
 
-        print(f'ALL NODES DATA?: {np.all([p.node_type == "data" for p in self.params.values()])}')
-        # print(f'w1 Params: {self.params["w1"]}')
         # Input layer activations
         params['A0'] = input_data
 
@@ -118,7 +80,7 @@ class ExampleNetwork:
         # Regression loss if no. of output neurons, k = 1 in network
         return (preds - actual) ** 2 / 2
 
-    def update_parameters(self, order='F', **new_params):
+    def update_parameters(self, order='C', **new_params):
         params = {
             'w1': cg.data_node(new_params['w1'], name='w1', order=order),
             'w2': cg.data_node(new_params['w2'], name='w2', order=order),

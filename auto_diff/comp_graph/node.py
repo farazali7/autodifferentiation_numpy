@@ -131,8 +131,7 @@ class Node(np.ndarray):
         Override transpose property on normal np.ndarray by returning OpNode capturing this op
         :return: OpNode holding transposed node data
         '''
-        # Check if all dims are same
-        all_dims_same = len(np.unique(self.shape)) == 1
+
         # order = 'C' if all_dims_same else 'F'
         order = 'C' if self.flags['F_CONTIGUOUS'] else 'F'
         return Node.create_op_node(np.transpose(self), 'transpose', self, order=order)

@@ -159,20 +159,3 @@ def relu(arr, name=None):
     op_node.cond = cond
 
     return op_node
-
-
-#TODO: Remove, just for gradient checking right now
-def add(arr1, arr2):
-    return arr1 + arr2
-
-def sub(arr1, arr2):
-    return arr1 - arr2
-
-def mul(arr1, arr2):
-    return arr1 * arr2
-
-def div(arr1, arr2):
-    return arr1 / arr2
-
-def pow(arr1, arr2):
-    return arr1 ** arr2

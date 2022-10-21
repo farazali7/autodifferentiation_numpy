@@ -90,21 +90,26 @@ def pytorch_test(x, y, w1, w2, w3, b1, b2, b3):
                                           'b1': np.copy(b1), 'b2': np.copy(b2), 'b3': np.copy(b3)})
 
     network = Network(weights=[w1.T, b1.T, w2.T, b2.T, w3.T, b3.T])
-    EPOCHS = 5
+    EPOCHS = 6
     LR = 1./100.
+
+    losses = []
 
     for i in range(EPOCHS):
 
-        test_1, all_non_leaf_1, params_1 = network.one_forward(x, y)
+        # test_1, all_non_leaf_1, params_1 = network.one_forward(x, y)
 
-        test_2, all_non_leaf_2, params_2 = network_2.one_forward(x, y)
-
-        grads_same = check_all_params_same(test_1, test_2)
-        params_same = check_all_params_same(params_1, params_2)
+        test_2, all_non_leaf_2, params_2, loss = network_2.one_forward(x, y)
+        losses.append(loss)
+        # grads_same = check_all_params_same(test_1, test_2)
+        # params_same = check_all_params_same(params_1, params_2)
         print('done testing')
 
     network.train(x, y, epochs=EPOCHS, learning_rate=LR)
     print('done')
+
+    plt.plot(range(EPOCHS), losses)
+    plt.show()
 
 
 

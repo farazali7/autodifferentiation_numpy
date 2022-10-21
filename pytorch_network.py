@@ -114,11 +114,11 @@ class Network(nn.Module):
             optimizer.step()  # Apply gradients; gradient descent
 
         # Plot avg loss over epochs
-        x_d = range(5 + 1)
-        plt.plot(x_d, losses)
-        plt.xlabel('Epoch')
-        plt.ylabel('Average Loss')
-        plt.show()
+        # x_d = range(6)
+        # plt.plot(x_d, [l.detach() for l in losses])
+        # plt.xlabel('Epoch')
+        # plt.ylabel('Average Loss')
+        # plt.show()
 
 
     def compute_loss(self, preds, actual):

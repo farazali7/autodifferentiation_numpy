@@ -84,12 +84,12 @@ class ExampleNetwork:
         new_params = {}
         # Perform parameter updates
         for param_name in grads.keys():
-            new_params[param_name] = self.params[param_name].T - grads[param_name].T*(1./100.)
+            new_params[param_name] = self.params[param_name] - grads[param_name]*(1./100.)
             # new_params[param_name] = new_params[param_name].T
             # new_params[param_name] = nn.params[param_name] - mean_grad*LR
-        self.params = self.update_parameters(**new_params)
+        self.params = self.update_parameters(order='C', **new_params)
 
-        return grads, all_g, old_params
+        return grads, all_g, old_params, mean_loss
 
 
     def forward_pass(self, input_data):
@@ -118,14 +118,14 @@ class ExampleNetwork:
         # Regression loss if no. of output neurons, k = 1 in network
         return (preds - actual) ** 2 / 2
 
-    def update_parameters(self, **new_params):
+    def update_parameters(self, order='F', **new_params):
         params = {
-            'w1': cg.data_node(new_params['w1'], name='w1'),
-            'w2': cg.data_node(new_params['w2'], name='w2'),
-            'w3': cg.data_node(new_params['w3'], name='w3'),
-            'b1': cg.data_node(new_params['b1'], name='b1'),
-            'b2': cg.data_node(new_params['b2'], name='b2'),
-            'b3': cg.data_node(new_params['b3'], name='b3'),
+            'w1': cg.data_node(new_params['w1'], name='w1', order=order),
+            'w2': cg.data_node(new_params['w2'], name='w2', order=order),
+            'w3': cg.data_node(new_params['w3'], name='w3', order=order),
+            'b1': cg.data_node(new_params['b1'], name='b1', order=order),
+            'b2': cg.data_node(new_params['b2'], name='b2', order=order),
+            'b3': cg.data_node(new_params['b3'], name='b3', order=order),
         }
         return params
 

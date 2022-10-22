@@ -70,12 +70,12 @@ class Node(np.ndarray):
 
     def _override_arith_ops(self, method_name, other_operand, op_name, is_this_node_first=True):
         '''
-        Override a given array arithmetic method by returning a new OpNode with the result.
+        Override a given array arithmetic method by returning a new operation type node with the result.
         :param method_name: String, name of arithmetic method
         :param other_operand: Node or nd.array or Number, the second operand in operation
-        :param op_name: Name of the new OpNode
+        :param op_name: Name of the new operation type node
         :param is_this_node_first: Boolean, indicates ordering: if True, this Node is first operand, else second
-        :return: OpNode with result of arithmetic method
+        :return: operation type node with result of arithmetic method
         '''
 
         # Handle non-node objects
@@ -128,10 +128,10 @@ class Node(np.ndarray):
     @property
     def T(self):
         '''
-        Override transpose property on normal np.ndarray by returning OpNode capturing this op
-        :return: OpNode holding transposed node data
+        Override transpose property on normal np.ndarray by returning operation type node capturing this op
+        :return: operation type node holding transposed node data
         '''
 
-        # order = 'C' if all_dims_same else 'F'
+        # Proper ordering is required so the np.ndarray.__new__ function creates the correctly shaped array
         order = 'C' if self.flags['F_CONTIGUOUS'] else 'F'
         return Node.create_op_node(np.transpose(self), 'transpose', self, order=order)
